@@ -63,6 +63,7 @@ public:
   const Option& sheetColumns() const { return m_sheetColumns; }
   const Option& sheetRows() const { return m_sheetRows; }
   const Option& splitLayers() const { return m_splitLayers; }
+  const Option& splitLayersReal() const { return m_splitLayersReal; }
   const Option& splitTags() const { return m_splitTags; }
   const Option& splitSlices() const { return m_splitSlices; }
   const Option& layer() const { return m_layer; }
@@ -129,6 +130,7 @@ private:
   Option& m_sheetColumns;
   Option& m_sheetRows;
   Option& m_splitLayers;
+  Option& m_splitLayersReal;
   Option& m_splitTags;
   Option& m_splitSlices;
   Option& m_layer;

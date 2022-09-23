@@ -1,0 +1,14 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DLAF_BACKEND=skia -DSKIA_DIR=C:\\deps\\skia -DSKIA_LIBRARY_DIR=C:\\deps\\skia\\out\\Release-x64 -DSKIA_LIBRARY=C:\\deps\\skia\\out\\Release-x64\\skia.lib",
+      "ctestCommandArgs": ""
+    }
+  ]
+}

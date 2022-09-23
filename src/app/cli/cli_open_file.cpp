@@ -25,6 +25,7 @@ CliOpenFile::CliOpenFile()
   fromFrame = -1;
   toFrame = -1;
   splitLayers = false;
+  splitLayersReal = false;
   splitTags = false;
   splitSlices = false;
   allLayers = false;

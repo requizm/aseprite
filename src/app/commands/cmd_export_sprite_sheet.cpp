@@ -84,6 +84,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<int> layerIndex { this, -1, "_layerIndex" };
   Param<std::string> tag { this, std::string(), "tag" };
   Param<bool> splitLayers { this, false, "splitLayers" };
+  Param<bool> splitLayersReal { this, false, "splitLayersReal" };
   Param<bool> splitTags { this, false, "splitTags" };
   Param<bool> listLayers { this, true, "listLayers" };
   Param<bool> listTags { this, true, "listTags" };
@@ -170,13 +171,149 @@ ConstraintType constraint_type_from_params(const ExportSpriteSheetParams& params
 
 #endif // ENABLE_UI
 
-Doc* generate_sprite_sheet_from_params(
+Doc* generate_sprite_sheet_from_params_seperate_layers(
   DocExporter& exporter,
   Context* ctx,
   const Site& site,
   const ExportSpriteSheetParams& params,
   const bool saveData,
   base::task_token& token)
+{
+  const app::SpriteSheetType type = params.type();
+  const int columns = params.columns();
+  const int rows = params.rows();
+  const int width = params.width();
+  const int height = params.height();
+  std::string filename = params.textureFilename();
+  const std::string dataFilename = params.dataFilename();
+  const SpriteSheetDataFormat dataFormat = params.dataFormat();
+  const std::string filenameFormat = params.filenameFormat();
+  const std::string layerName = params.layer();
+  const int layerIndex = params.layerIndex();
+  const std::string tagName = params.tag();
+  const int borderPadding = std::clamp(params.borderPadding(), 0, 100);
+  const int shapePadding = std::clamp(params.shapePadding(), 0, 100);
+  const int innerPadding = std::clamp(params.innerPadding(), 0, 100);
+  const bool trimSprite = params.trimSprite();
+  const bool trimCels = params.trim();
+  const bool trimByGrid = params.trimByGrid();
+  const bool extrude = params.extrude();
+  const bool ignoreEmpty = params.ignoreEmpty();
+  const bool mergeDuplicates = params.mergeDuplicates();
+  const bool splitLayers = params.splitLayers();
+  const bool splitLayersReal = params.splitLayersReal();
+  const bool splitTags = params.splitTags();
+  const bool listLayers = params.listLayers();
+  const bool listTags = params.listTags();
+  const bool listSlices = params.listSlices();
+
+  ASSERT(splitLayersReal);
+
+  SelectedFrames selFrames;
+  Tag* tag = calculate_selected_frames(site, tagName, selFrames);
+
+#ifdef _DEBUG
+  frame_t nframes = selFrames.size();
+  ASSERT(nframes > 0);
+#endif
+
+  Doc* doc = const_cast<Doc*>(site.document());
+  const Sprite* sprite = site.sprite();
+
+  // If the user choose to render selected layers only, we can
+  // temporaly make them visible and hide the other ones.
+  RestoreVisibleLayers layersVisibility;
+  calculate_visible_layers(site, layerName, layerIndex, layersVisibility);
+
+  SelectedLayers selLayers;
+  if (layerName != kSelectedLayers) {
+    // TODO add a getLayerByName
+    int i = sprite->allLayersCount();
+    for (const Layer* layer : sprite->allLayers()) {
+      i--;
+      if (layer->name() == layerName && layerIndex == -1 ||
+          layer->name() == layerName && layerIndex == i) {
+        selLayers.insert(const_cast<Layer*>(layer));
+        break;
+      }
+    }
+  }
+
+  std::vector<SelectedLayers*> selLayersList;
+  if (splitLayersReal) {
+    for (int i = 0; i < doc->sprite()->allVisibleLayers().size(); i++) {
+      SelectedLayers* sl = new SelectedLayers();
+      sl->insert(doc->sprite()->allVisibleLayers().at(i));
+      selLayersList.push_back(sl);
+    }
+  }
+
+  std::string originalFilename = filename;
+  for (int i = 0; i < selLayersList.size(); i++) {
+    selLayers = *selLayersList.at(i);
+    std::string n = originalFilename;
+    filename = n.replace(n.find_last_of("."), 1, "_" + std::to_string(i) + ".");
+    exporter.reset();
+    exporter.addDocumentSamples(doc,
+                                tag,
+                                splitLayers,
+                                splitTags,
+                                !selLayers.empty() ? &selLayers : nullptr,
+                                !selFrames.empty() ? &selFrames : nullptr);
+
+  if (saveData) {
+    if (!filename.empty())
+      exporter.setTextureFilename(filename);
+    if (!dataFilename.empty()) {
+      exporter.setDataFilename(dataFilename);
+      exporter.setDataFormat(dataFormat);
+    }
+  }
+  if (!filenameFormat.empty())
+    exporter.setFilenameFormat(filenameFormat);
+
+  exporter.setTextureWidth(width);
+  exporter.setTextureHeight(height);
+  exporter.setTextureColumns(columns);
+  exporter.setTextureRows(rows);
+  exporter.setSpriteSheetType(type);
+  exporter.setBorderPadding(borderPadding);
+  exporter.setShapePadding(shapePadding);
+  exporter.setInnerPadding(innerPadding);
+  exporter.setTrimSprite(trimSprite);
+  exporter.setTrimCels(trimCels);
+  exporter.setTrimByGrid(trimByGrid);
+  exporter.setExtrude(extrude);
+  exporter.setSplitLayers(splitLayers);
+    exporter.setSplitLayersReal(splitLayersReal);
+  exporter.setSplitTags(splitTags);
+  exporter.setIgnoreEmptyCels(ignoreEmpty);
+  exporter.setMergeDuplicates(mergeDuplicates);
+    if (listLayers)
+      exporter.setListLayers(true);
+    if (listTags)
+      exporter.setListTags(true);
+    if (listSlices)
+      exporter.setListSlices(true);
+
+  // We have to call exportSheet() while RestoreVisibleLayers is still
+  // alive. In this way we can export selected layers correctly if
+  // that option (kSelectedLayers) is selected.
+    if (i == selLayersList.size() - 1) {
+      return exporter.exportSheet(ctx, token);
+    }
+    else {
+      exporter.exportSheet(ctx, token);
+    }
+  }
+}
+
+Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
+                                       Context* ctx,
+                                       const Site& site,
+                                       const ExportSpriteSheetParams& params,
+                                       const bool saveData,
+                                       base::task_token& token)
 {
   const app::SpriteSheetType type = params.type();
   const int columns = params.columns();
@@ -200,10 +337,16 @@ Doc* generate_sprite_sheet_from_params(
   const bool ignoreEmpty = params.ignoreEmpty();
   const bool mergeDuplicates = params.mergeDuplicates();
   const bool splitLayers = params.splitLayers();
+  const bool splitLayersReal = params.splitLayersReal();
   const bool splitTags = params.splitTags();
   const bool listLayers = params.listLayers();
   const bool listTags = params.listTags();
   const bool listSlices = params.listSlices();
+
+  if (splitLayersReal) {
+    return generate_sprite_sheet_from_params_seperate_layers(
+      exporter, ctx, site, params, saveData, token);
+  }
 
   SelectedFrames selFrames;
   Tag* tag = calculate_selected_frames(site, tagName, selFrames);
@@ -265,6 +408,7 @@ Doc* generate_sprite_sheet_from_params(
   exporter.setTrimByGrid(trimByGrid);
   exporter.setExtrude(extrude);
   exporter.setSplitLayers(splitLayers);
+  exporter.setSplitLayersReal(splitLayersReal);
   exporter.setSplitTags(splitTags);
   exporter.setIgnoreEmptyCels(ignoreEmpty);
   exporter.setMergeDuplicates(mergeDuplicates);
@@ -413,6 +557,7 @@ public:
     dataEnabled()->setSelected(!m_dataFilename.empty());
     dataFormat()->setSelectedItemIndex(int(params.dataFormat()));
     splitLayers()->setSelected(params.splitLayers());
+    splitLayersReal()->setSelected(params.splitLayersReal());
     splitTags()->setSelected(params.splitTags());
     listLayers()->setSelected(params.listLayers());
     listTags()->setSelected(params.listTags());
@@ -543,6 +688,7 @@ public:
     params.layerIndex      (layerIndex());
     params.tag             (tagValue());
     params.splitLayers     (splitLayersValue());
+    params.splitLayersReal (splitLayersRealValue());
     params.splitTags       (splitTagsValue());
     params.listLayers      (listLayersValue());
     params.listTags        (listTagsValue());
@@ -736,6 +882,10 @@ private:
 
   bool splitLayersValue() const {
     return splitLayers()->isSelected();
+  }
+
+  bool splitLayersRealValue() const {
+    return splitLayersReal()->isSelected();
   }
 
   bool splitTagsValue() const {
@@ -1254,6 +1404,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       if (!params.layerIndex.isSet())       params.layerIndex(      defPref.spriteSheet.layerIndex());
       if (!params.tag.isSet())              params.tag(             defPref.spriteSheet.frameTag());
       if (!params.splitLayers.isSet())      params.splitLayers(     defPref.spriteSheet.splitLayers());
+      if (!params.splitLayersReal.isSet())  params.splitLayersReal(defPref.spriteSheet.splitLayersReal());
       if (!params.splitTags.isSet())        params.splitTags(       defPref.spriteSheet.splitTags());
       if (!params.listLayers.isSet())       params.listLayers(      defPref.spriteSheet.listLayers());
       if (!params.listTags.isSet())         params.listTags(        defPref.spriteSheet.listFrameTags());
@@ -1301,6 +1452,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.layerIndex      (params.layerIndex());
     docPref.spriteSheet.frameTag        (params.tag());
     docPref.spriteSheet.splitLayers     (params.splitLayers());
+    docPref.spriteSheet.splitLayersReal (params.splitLayersReal());
     docPref.spriteSheet.splitTags       (params.splitTags());
     docPref.spriteSheet.listLayers      (params.listLayers());
     docPref.spriteSheet.listFrameTags   (params.listTags());

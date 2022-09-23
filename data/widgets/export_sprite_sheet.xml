@@ -50,6 +50,10 @@
       <button id="close_sprite_section" icon="window_close_icon" />
     </hbox>
     <grid id="section_sprite" columns="4" expansive="true">
+      <label text="@.source" />
+      <combobox id="source" text="" cell_hspan="2" cell_align="horizontal" />
+      <check id="split_layers_real" text="@.split_layers_real" tooltip="@.split_layers_real_tooltip" tooltip_dir="top" />
+
       <label text="@.layers" />
       <combobox id="layers" text="" cell_hspan="2" cell_align="horizontal" />
       <check id="split_layers" text="@.split_layers" tooltip="@.split_layers_tooltip" tooltip_dir="bottom" />

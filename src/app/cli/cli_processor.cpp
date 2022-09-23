@@ -273,6 +273,12 @@ int CliProcessor::process(Context* ctx)
           if (m_exporter)
             m_exporter->setSplitLayers(true);
         }
+        // --split-layers-real
+        else if (opt == &m_options.splitLayersReal()) {
+          cof.splitLayersReal = true;
+          if (m_exporter)
+            m_exporter->setSplitLayersReal(true);
+        }
         // --split-tags
         else if (opt == &m_options.splitTags()) {
           cof.splitTags = true;

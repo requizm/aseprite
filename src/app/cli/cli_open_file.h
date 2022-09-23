@@ -30,6 +30,7 @@ namespace app {
     std::vector<std::string> excludeLayers;
     doc::frame_t fromFrame, toFrame;
     bool splitLayers;
+    bool splitLayersReal;
     bool splitTags;
     bool splitSlices;
     bool allLayers;
