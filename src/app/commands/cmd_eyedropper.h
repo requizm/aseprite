@@ -11,12 +11,15 @@
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "gfx/point.h"
+#include "ui/message.h"
 
 namespace render {
   class Projection;
 }
 
 namespace app {
+
+  using namespace ui;
   class Editor;
   class Site;
 
@@ -33,7 +36,8 @@ namespace app {
     void executeOnMousePos(Context* context,
                            Editor* editor,
                            const gfx::Point& mousePos,
-                           const bool foreground);
+                           const bool foreground,
+                           const ui::MouseMessage* message);
 
   protected:
     void onLoadParams(const Params& params) override;

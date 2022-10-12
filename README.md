@@ -1,3 +1,8 @@
+
+# Known issues:
+
+- Disabled scripting api. Hard to integrate std::vector and lua xd
+- Removed `save_option(bgColors), save_option(fgColors), load_option(bgColors), load_option(fgColors)` from the `pref.xml.cpp` (if you wanna build, you also need to change)
 # Aseprite
 
 [![build](https://github.com/aseprite/aseprite/actions/workflows/build.yml/badge.svg)](https://github.com/aseprite/aseprite/actions/workflows/build.yml)

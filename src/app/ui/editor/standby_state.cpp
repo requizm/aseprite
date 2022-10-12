@@ -802,7 +802,7 @@ void StandbyState::callEyedropper(Editor* editor, const ui::MouseMessage* msg)
   bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
 
   eyedropper->executeOnMousePos(UIContext::instance(), editor,
-                                msg->position(), fg);
+                                msg->position(), fg, msg);
 }
 
 void StandbyState::onPivotChange(Editor* editor)

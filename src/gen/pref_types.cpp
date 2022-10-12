@@ -296,6 +296,7 @@ void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
     << "#pragma once\n"
     << "\n"
     << "#include <string>\n"
+    << "#include <app/shade.h>\n"
     << "\n"
     << "namespace app {\n"
     << "namespace gen {\n";
