@@ -234,12 +234,31 @@ void EyedropperCommand::executeOnMousePos(Context* context,
   if (message != nullptr) {
     if (foreground) {
       app::Shade colors = pref.colorBar.fgColors();
-      colors.push_back(color);
-      pref.colorBar.fgColors(colors);
-    } else {
+      bool addable = true;
+      if (colors.size() > 0) {
+        app::Color prevColor = colors.at(colors.size() - 1);
+        if (prevColor == color) {
+          addable = false;
+        }
+      }
+      if (addable) {
+        colors.push_back(color);
+        pref.colorBar.fgColors(colors);
+      }
+    }
+    else {
       app::Shade colors = pref.colorBar.bgColors();
-      colors.push_back(color);
-      pref.colorBar.bgColors(colors);
+      bool addable = true;
+      if (colors.size() > 0) {
+        app::Color prevColor = colors.at(colors.size() - 1);
+        if (prevColor == color) {
+          addable = false;
+        }
+      }
+      if (addable) {
+        colors.push_back(color);
+        pref.colorBar.bgColors(colors);
+      }
     }
   }
 }
