@@ -248,11 +248,16 @@ Doc* generate_sprite_sheet_from_params_seperate_layers(
     }
   }
 
+  std::string directory = base::get_file_path(filename);
   std::string originalFilename = filename;
+  std::string extension = base::get_file_extension(filename);
   for (int i = 0; i < selLayersList.size(); i++) {
     selLayers = *selLayersList.at(i);
-    std::string n = originalFilename;
-    filename = n.replace(n.find_last_of("."), 1, "_" + std::to_string(i) + ".");
+
+    std::string fileNameWithoutExtension = selLayers.toAllLayersList().at(0)->name();
+	  filename = directory + base::path_separator + fileNameWithoutExtension + "." + extension;
+    std::replace(filename.begin(), filename.end(), ' ', '_');
+
     exporter.reset();
     exporter.addDocumentSamples(doc,
                                 tag,
