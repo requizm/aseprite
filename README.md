@@ -1,3 +1,14 @@
+# Known issues
+
+**Replace multiple color:**
+
+- Disabled scripting api. Hard to integrate std::vector and lua xd
+- Removed `save_option(bgColors), save_option(fgColors), load_option(bgColors), load_option(fgColors)` from the `pref.xml.cpp` (if you wanna build, you also need to delete)
+
+**Save all layers with new files:**
+
+- Be careful for layer names, it will be used as file name. Every layer name must be unique.
+
 # Aseprite
 
 [![build](https://github.com/aseprite/aseprite/actions/workflows/build.yml/badge.svg)](https://github.com/aseprite/aseprite/actions/workflows/build.yml)

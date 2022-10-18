@@ -25,6 +25,7 @@
 #include "doc/image.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
+#include "ui/message.h"
 #include "ui/system.h"
 
 namespace app {
@@ -189,13 +190,14 @@ void EyedropperCommand::onExecute(Context* context)
     return;
 
   Editor* editor = static_cast<Editor*>(widget);
-  executeOnMousePos(context, editor, mousePos, !m_background);
+  executeOnMousePos(context, editor, mousePos, !m_background, nullptr);
 }
 
 void EyedropperCommand::executeOnMousePos(Context* context,
                                           Editor* editor,
                                           const gfx::Point& mousePos,
-                                          const bool foreground)
+                                          const bool foreground,
+                                          const ui::MouseMessage* message)
 {
   ASSERT(editor);
 
@@ -228,6 +230,37 @@ void EyedropperCommand::executeOnMousePos(Context* context,
     pref.colorBar.fgColor(color);
   else
     pref.colorBar.bgColor(color);
+
+  if (message != nullptr) {
+    if (foreground) {
+      app::Shade colors = pref.colorBar.fgColors();
+      bool addable = true;
+      if (colors.size() > 0) {
+        app::Color prevColor = colors.at(colors.size() - 1);
+        if (prevColor == color) {
+          addable = false;
+        }
+      }
+      if (addable) {
+        colors.push_back(color);
+        pref.colorBar.fgColors(colors);
+      }
+    }
+    else {
+      app::Shade colors = pref.colorBar.bgColors();
+      bool addable = true;
+      if (colors.size() > 0) {
+        app::Color prevColor = colors.at(colors.size() - 1);
+        if (prevColor == color) {
+          addable = false;
+        }
+      }
+      if (addable) {
+        colors.push_back(color);
+        pref.colorBar.bgColors(colors);
+      }
+    }
+  }
 }
 
 Command* CommandFactory::createEyedropperCommand()

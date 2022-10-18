@@ -172,39 +172,70 @@ void ReplaceColorCommand::onExecute(Context* context)
 #endif
   Site site = context->activeSite();
 
-  ReplaceColorFilterWrapper filter(site.layer());
-  FilterManagerImpl filterMgr(context, &filter);
-  filterMgr.setTarget(
-    site.sprite()->pixelFormat() == IMAGE_INDEXED ?
-    TARGET_INDEX_CHANNEL:
-    TARGET_RED_CHANNEL |
-    TARGET_GREEN_CHANNEL |
-    TARGET_BLUE_CHANNEL |
-    TARGET_GRAY_CHANNEL |
-    TARGET_ALPHA_CHANNEL);
+  app::Shade fgColors = Preferences::instance().colorBar.fgColors();
+  app::Shade bgColors = Preferences::instance().colorBar.bgColors();
+  int s = std::min(fgColors.size(), bgColors.size());
+  for (int i = 0; i < s; i++) {
+    ReplaceColorFilterWrapper filter(site.layer());
+    FilterManagerImpl filterMgr(context, &filter);
+    filterMgr.setTarget(
+      site.sprite()->pixelFormat() == IMAGE_INDEXED ?
+      TARGET_INDEX_CHANNEL:
+      TARGET_RED_CHANNEL |
+      TARGET_GREEN_CHANNEL |
+      TARGET_BLUE_CHANNEL |
+      TARGET_GRAY_CHANNEL |
+      TARGET_ALPHA_CHANNEL);
 
-  filter.setFrom(Preferences::instance().colorBar.fgColor());
-  filter.setTo(Preferences::instance().colorBar.bgColor());
-#ifdef ENABLE_UI
-  if (ui)
-    filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
-#endif // ENABLE_UI
+    filter.setFrom(fgColors.at(i));
+    filter.setTo(bgColors.at(i));
 
-  if (params().from.isSet()) filter.setFrom(params().from());
-  if (params().to.isSet())  filter.setTo(params().to());
-  if (params().tolerance.isSet()) filter.setTolerance(params().tolerance());
-  if (params().channels.isSet()) filterMgr.setTarget(params().channels());
+    if (params().from.isSet()) filter.setFrom(params().from());
+    if (params().to.isSet())  filter.setTo(params().to());
+    if (params().tolerance.isSet()) filter.setTolerance(params().tolerance());
+    if (params().channels.isSet()) filterMgr.setTarget(params().channels());
 
-#ifdef ENABLE_UI
-  if (ui) {
-    ReplaceColorWindow window(filter, filterMgr);
-    if (window.doModal())
-      set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
-  }
-  else
-#endif // ENABLE_UI
-  {
     start_filter_worker(&filterMgr);
+  }
+  fgColors.clear();
+  bgColors.clear();
+  Preferences::instance().colorBar.fgColors(fgColors);
+  Preferences::instance().colorBar.bgColors(bgColors);
+  {
+    ReplaceColorFilterWrapper filter(site.layer());
+    FilterManagerImpl filterMgr(context, &filter);
+    filterMgr.setTarget(
+      site.sprite()->pixelFormat() == IMAGE_INDEXED ?
+      TARGET_INDEX_CHANNEL:
+      TARGET_RED_CHANNEL |
+      TARGET_GREEN_CHANNEL |
+      TARGET_BLUE_CHANNEL |
+      TARGET_GRAY_CHANNEL |
+      TARGET_ALPHA_CHANNEL);
+
+    filter.setFrom(Preferences::instance().colorBar.fgColor());
+    filter.setTo(Preferences::instance().colorBar.bgColor());
+  #ifdef ENABLE_UI
+    if (ui)
+      filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
+  #endif // ENABLE_UI
+
+    if (params().from.isSet()) filter.setFrom(params().from());
+    if (params().to.isSet())  filter.setTo(params().to());
+    if (params().tolerance.isSet()) filter.setTolerance(params().tolerance());
+    if (params().channels.isSet()) filterMgr.setTarget(params().channels());
+
+  #ifdef ENABLE_UI
+    if (ui) {
+      ReplaceColorWindow window(filter, filterMgr);
+      if (window.doModal())
+        set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
+    }
+    else
+  #endif // ENABLE_UI
+    {
+      start_filter_worker(&filterMgr);
+    }
   }
 }
 

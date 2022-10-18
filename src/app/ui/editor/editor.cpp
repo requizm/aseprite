@@ -1852,6 +1852,15 @@ bool Editor::onProcessMessage(Message* msg)
         if (mouseMsg->right() && !m_secondaryButton) {
           m_secondaryButton = true;
         }
+        if(mouseMsg->middle()) {
+          app::Shade a = Preferences::instance().colorBar.fgColors();
+          a.clear();
+          Preferences::instance().colorBar.fgColors(a);
+
+          app::Shade b = Preferences::instance().colorBar.bgColors();
+          b.clear();
+          Preferences::instance().colorBar.bgColors(b);
+        }
 
         updateToolLoopModifiersIndicators();
         updateQuicktool();
