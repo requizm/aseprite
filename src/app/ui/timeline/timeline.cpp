@@ -121,6 +121,9 @@ namespace {
       flags = static_cast<LayerFlags>(int(flags) & ~int(LayerFlags::Editable));
 
     for (Layer* child : group->layers()) {
+      if (!child->isGroup() && (child->parent() != nullptr && child->parent()->parent() != nullptr))  {
+        child->setVisible(group->isVisible());
+      }
       if (child->isGroup() && !child->isCollapsed())
         for_each_expanded_layer<Pred>(
           static_cast<LayerGroup*>(child),
@@ -4161,8 +4164,13 @@ void Timeline::setLayerVisibleFlag(const layer_t l, const bool state)
 
     // Regenerate rows because might change the flag of the children
     // (the flag is propagated to the children in m_inheritedFlags).
-    if (layer->isGroup() && layer->isExpanded()) {
+    if (layer->isGroup()) {
       regenRows = true;
+    }
+
+    if (regenRows) {
+      regenerateRows();
+      regenRows = false;
     }
 
     // Show parents too
@@ -4180,7 +4188,6 @@ void Timeline::setLayerVisibleFlag(const layer_t l, const bool state)
   }
 
   if (regenRows) {
-    regenerateRows();
     invalidate();
   }
 
