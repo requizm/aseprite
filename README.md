@@ -9,6 +9,12 @@
 
 - Be careful for layer names, it will be used as file name. Every layer name must be unique.
 
+# Features
+
+- Replace multiple colors at the same time. Shift+Right click to select foreground color, Shift+Left click to select background color. Then Shift+R to execute the replace color command.
+- Save all layers with new files. Select "Annen" option on Export Sprite Sheet dialog. Then you can save all layers with new files.
+- Set visible/unvisible all layers of group.
+
 # Aseprite
 
 [![build](https://github.com/aseprite/aseprite/actions/workflows/build.yml/badge.svg)](https://github.com/aseprite/aseprite/actions/workflows/build.yml)
